@@ -1,0 +1,121 @@
+#include <NewPing.h>
+#include <QTRSensors.h>
+
+QTRSensors qtr;
+
+enum states
+{
+CursingSpeed,//Main case  
+Turing,//Turn the car
+Decelerate //Decelerate the car
+  
+};
+
+enum states state = CursingSpeed;//Sets  the current state as type enum state 
+
+unsigned long currentTime,startTime,TurningTime, DecTime;// time values for to go into state  
+
+//Turing Sevo
+int Turing_pin=9; //Sevro motor pin
+int Swich_turing=0; //help swiching between if stament
+int Threeft_Turn_Degree=2;//Degree to make turn for 3in circle 
+int fiveft_Turn_Degree=2;//Degree to make turn for 5in circle 
+int slowDown = 0;//Swich stament 
+
+//DcMotors 
+int Dc_speed_pin=3;//EN A on H-brige 
+int Dc_In1=4;
+int Dc_In2=5;
+
+//Dc Speed holders
+int Dc_Speed_Max=200;//Determin how fast the Cursing speed will be and help with for stament 
+int i;//Holds value for speeds
+int Dc_speed;//Save Max speed so can be move around and edit 
+
+
+void setup() {
+ Serial.begin(9600);
+ //Turing sevo
+ pinMode(Turing_pin,OUTPUT);
+ 
+ startTime=millis();
+ 
+ //Dc-motor setup 
+  pinMode(Dc_speed_pin,OUTPUT);
+  pinMode(Dc_In1,OUTPUT);
+  pinMode(Dc_In2,OUTPUT);
+  CrusingSpeed();
+
+}
+
+void loop() {
+
+
+switch(state){
+ case CursingSpeed:
+      currentTime = millis();
+    if(currentTime-TurningTime >=5000)
+    {
+      state = Turing;
+    }
+     if(slowDown == 1)
+    {
+      state = Decelerate;
+    }
+break;
+
+case Turing:
+Turning_Fuc();   
+break;
+
+case Decelerate:
+   Decelerate_End();
+   
+   break;
+
+
+}
+}
+void CrusingSpeed(){
+for(i=100; i<=Dc_Speed_Max ; ++i){  
+
+analogWrite(Dc_speed_pin,i);
+digitalWrite(Dc_In1,HIGH);
+digitalWrite(Dc_In2,LOW);
+
+Serial.println(i);
+delay(250);
+
+}
+}
+
+void Decelerate_End(){
+for(i=0;i<=Dc_Speed_Max ;i=i+10){  
+analogWrite(Dc_speed_pin,i);
+digitalWrite(Dc_In1,HIGH);
+digitalWrite(Dc_In2,LOW);
+delay(250);
+}
+}
+
+void Turning_Fuc(){
+
+if(Swich_turing == 0)
+{
+digitalWrite(Turing_pin, Threeft_Turn_Degree);
+Swich_turing = 1;
+}
+if(Swich_turing == 1)
+{
+digitalWrite(Turing_pin, fiveft_Turn_Degree);
+Swich_turing = 2;
+}
+if(Swich_turing == 2)
+{
+digitalWrite(Turing_pin, 0);
+slowDown =1;
+Swich_turing = 0;
+}
+
+
+}
